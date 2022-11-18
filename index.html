@@ -1,0 +1,446 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="200">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <h1>UNOFFICIAL(2) VOTERS TURNOUT</h2>
+        <div class="row" style="margin:50px; ">
+            <div class="col-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p style="text-align:center;">JUMLAH KESELURUHAN <br> BELUM KELUAR</p>
+                        <div class="jumlahBelumKeluar" style="text-align:center; font-size:38px; padding:15px;color:white;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p style="text-align:center;">PERATUS KESELURUHAN <br> BELUM KELUAR </p>
+                        <div class="peratusJBK" style="text-align:center; font-size:38px; padding:15px;color:white;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p style="text-align:center;">JUMLAH KESELURUHAN <br> TURNOUT</p>
+                        <div class="jumlahKesuluruhanTO" style="text-align:center; font-size:38px; padding:15px;color:white;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p style="text-align:center;">PERATUS KESELURUHAN <br> TURNOUT </p>
+                        <div class="peratusJKTO" style="text-align:center; font-size:38px; padding:15px; color:white;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table" style='margin-top:60px;'></div>
+
+
+        </div>
+
+
+    <!-- <div class="div_scorebox" ></div>
+    <div class="div_bar"></div> -->
+
+        <style>
+            html,
+            body,
+            svg {
+                font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
+                font-weight: bold;
+            }
+
+            body {
+                background-color: black;
+            }
+
+            h1 {
+                text-align: center;
+                padding: 20px;
+                font-weight: bold;
+                color: aliceblue;
+                background-color: rgb(30, 58, 136);
+            }
+
+            .text1 {
+                color: white;
+            }
+
+            .card-body {
+                background-color:black;
+                border: 1px solid rgb(30, 58, 136);
+                height: 14rem;
+               
+            }
+
+            .card {
+                background-color: rgb(30, 58, 136);
+            }
+
+            p {
+                color:white;
+                font-size: 20px;
+            }
+
+            table {
+                margin-left: auto;
+                margin-right: auto;
+                box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(3, 3, 3, 0.19);
+                color: rgb(209, 209, 209);
+            }
+
+            table td:nth-child(2){  /* this will go to the 2nd column of a table directly */
+
+                text-align: left;
+
+            }
+
+            th {
+                text-align: center;
+                border: 2px solid rgb(3, 38, 134);
+                padding: 8px;
+                font-size: 20px;
+
+            }
+
+            td {
+                text-align: center;
+                border: 1px solid rgb(69, 84, 124);
+                padding: 8px;
+                font-size: 17px;
+            }
+        </style>
+
+        <script>
+            let comma = d3.format(',');
+            d3.csv('https://docs.google.com/spreadsheets/d/e/2PACX-1vSwE48EBkAeig42VlsMUj47n1Wfcwx1HM3LdWa7CmzWy3enc3QNnldbeCH5EJLfzq1EAVsSwsdeZ1kI/pub?gid=218556472&single=true&output=csv')
+                .then(csv => {
+
+                    fields = csv.columns;
+                    dataset = csv;
+
+
+                    // data cleaning, to remove comma from numbers
+                    dataset.forEach(d => {
+                        if (d['Jumlah \nBelum Keluar']) {
+                            let text = d['Jumlah \nBelum Keluar'];
+                            let result = text.replace(",", "");
+                            d['Jumlah \nBelum Keluar'] = result
+
+                        }
+                        if (d['Jumlah\nPengundi\nPRU-15']) {
+                            let text = d['Jumlah\nPengundi\nPRU-15'];
+                            let result = text.replace(",", "");
+                            d['Jumlah\nPengundi\nPRU-15'] = result
+
+                        }
+
+                        if (d['Jumlah\nTurnout']) {
+
+                            let text = d['Jumlah\nTurnout'];
+                            let result = text.replace("-", 0);
+                            result = result.trim()
+                            result = result.replace(/\,/g, "");
+                            d['Jumlah\nTurnout'] = result
+                        }
+                    });
+
+                    dataset.forEach(d => {
+
+                        for (var i in d) {
+
+                            if (d[i] != 'P18 KULIM-BANDAR BAHARU') {
+                                if (d[i].includes("-")) {
+                                    d[i] = 0;
+                                }
+                            }
+
+                        }
+                    });
+
+                    alterData(dataset)
+
+
+                });
+
+            function alterData(data) {
+
+
+                var total = [ //initialize the total value to 0
+                    { key: 'PERLIS', value: 0 },
+                    { key: 'KEDAH', value: 0 },
+                    { key: 'KELANTAN', value: 0 },
+                    { key: 'TERENGGANU', value: 0 },
+                    { key: 'PULAU PINANG', value: 0 },
+                    { key: 'PERAK', value: 0 },
+                    { key: 'PAHANG', value: 0 },
+                    { key: 'SELANGOR', value: 0 },
+                    { key: 'W.P KUALA LUMPUR', value: 0 },
+                    { key: 'W.P PUTRAJAYA', value: 0 },
+                    { key: 'NEGERI SEMBILAN', value: 0 },
+                    { key: 'MELAKA', value: 0 },
+                    { key: 'JOHOR', value: 0 },
+                    { key: 'W.P LABUAN', value: 0 },
+                    { key: 'SABAH', value: 0 },
+                    { key: 'SARAWAK', value: 0 }
+                ]
+
+                renderTable(data)
+
+
+                dataset.forEach(d => {
+                    if (d['Jumlah \nBelum Keluar']) {
+
+                        let text1 = d['Jumlah \nBelum Keluar'];
+                        let result1 = text1.replace(",", "");
+                        d['Jumlah \nBelum Keluar'] = result1
+
+
+
+                    }
+                    if (d['Jumlah\nPengundi\nPRU-15']) {
+                        let text2 = d['Jumlah\nPengundi\nPRU-15'];
+                        let result2 = text2.replace(",", "");
+                        d['Jumlah\nPengundi\nPRU-15'] = result2
+
+                    }
+
+                    if (d['Jumlah\nTurnout']) {
+
+                        let text = d['Jumlah\nTurnout'];
+                        let result = text.replace("-", 0);
+                        result = result.trim()
+                        result = result.replace(",", "");
+                        d['Jumlah\nTurnout'] = result
+
+
+
+                    }
+                });
+
+
+
+                var totalUndi = d3.sum(data, d => d['Jumlah\nPengundi\nPRU-15'])
+
+                var jbk = totalUndi
+
+
+                ///////////////////////////JBK/////////////////////////////////////
+
+                var jumlahBelumKeluar = d3.sum(data, d => d['Jumlah \nBelum Keluar'])
+
+                var peratusJBK = jumlahBelumKeluar / jbk * 100
+
+
+                ///////////////////////////JBK/////////////////////////////////////
+
+                ///////////////////////////JKTO/////////////////////////////////////
+
+                var jkto = totalUndi
+
+                var jumlahKesuluruhanTO = d3.sum(data, d => d['Jumlah\nTurnout'])
+
+                var peratusJKTO = jumlahKesuluruhanTO / jkto * 100
+
+
+                ///////////////////////////JBK/////////////////////////////////////
+
+                d3.select('.jumlahBelumKeluar')
+                    .selectAll('.totalSum')
+                    .data([{ data: jumlahBelumKeluar }])
+                    .join('div')
+                    .attr('class', 'jumlahBelumKeluar')
+                    .call(sel => {
+                        sel.selectAll('.total1')
+                            .data(d => [d])
+                            .join('text')
+                            .attr('class', 'total1')
+                            .text(function (d) { return comma(d.data) })
+
+                    })
+
+                d3.select('.peratusJBK')
+                    .selectAll('.totalSum')
+                    .data([{ data: peratusJBK }])
+                    .join('div')
+                    .attr('class', 'peratusJBK')
+                    .call(sel => {
+                        sel.selectAll('.total2')
+                            .data(d => [d])
+                            .join('text')
+                            .attr('class', 'total2')
+                            .text(function (d) { return d.data.toFixed(2) + '%' })
+
+                    })
+
+                d3.select('.jumlahKesuluruhanTO')
+                    .selectAll('.totalSum')
+                    .data([{ data: jumlahKesuluruhanTO }])
+                    .join('div')
+                    .attr('class', 'jumlahKesuluruhanTO')
+                    .call(sel => {
+                        sel.selectAll('.total3')
+                            .data(d => [d])
+                            .join('text')
+                            .attr('class', 'total3')
+                            .text(function (d) { return comma(d.data) })
+
+                    })
+
+                d3.select('.peratusJKTO')
+                    .selectAll('.totalSum')
+                    .data([{ data: peratusJKTO }])
+                    .join('div')
+                    .attr('class', 'peratusJKTO')
+                    .call(sel => {
+                        sel.selectAll('.total4')
+                            .data(d => [d])
+                            .join('text')
+                            .attr('class', 'total4')
+                            .text(function (d) { return d.data.toFixed(2) + '%' })
+
+                    })
+
+            }
+
+            function renderTable(data) {
+
+
+
+                data.forEach((d, i) => {
+
+                    floatData1 = +d['Jumlah\nTurnout'];
+                    d['Jumlah\nTurnout'] = comma(floatData1)
+
+
+                    floatData2 = +d['Jumlah \nBelum Keluar'];
+                    d['Jumlah \nBelum Keluar'] = comma(floatData2)
+
+                })
+
+
+                data.forEach((d, i) => {
+
+
+                    if (d['Turnout\n8am - 9am'] != 0) {
+                        d['Latest Update'] = '8am - 9am'
+                    }
+
+                    if (d['Turnout\n9am - 10am'] != 0) {
+                        d['Latest Update'] = '9am - 10am'
+                    }
+
+                    if (d['Turnout\n10am - 11am'] != 0) {
+                        d['Latest Update'] = '10am - 11am'
+                    }
+
+                    if (d['Turnout\n11am - 12pm'] != 0) {
+                        d['Latest Update'] = '11am - 12pm'
+                    }
+
+                    if (d['Turnout\n12pm - 1pm'] != 0) {
+                        d['Latest Update'] = '12pm - 1pm'
+                    }
+
+                    if (d['Turnout\n1pm - 2pm'] != 0) {
+                        d['Latest Update'] = '1pm - 2pm'
+                    }
+
+                    if (d['Turnout\n2pm - 3pm'] != 0) {
+                        d['Latest Update'] = '2pm - 3pm'
+                    }
+
+                    if (d['Turnout\n3pm - 4pm'] != 0) {
+                        d['Latest Update'] = '3pm - 4pm'
+                    }
+
+                    if (d['Turnout\n4pm - 5pm'] != 0) {
+
+                        d['Latest Update'] = '4pm - 5pm'
+                    }
+
+                    if (d['Turnout\n5pm - 6pm'] != 0) {
+                        d['Latest Update'] = '5pm - 6pm'
+                    }
+
+                })
+
+
+                var column_order = ['Negeri', 'Parlimen', 'Jumlah\nTurnout', 'Jumlah\nTurnout\n%',
+                    'Jumlah \nBelum Keluar', 'Jumlah \nBelum Keluar\n%', 'Latest Update']
+
+                //var column_order = fields
+
+                d3.select('.table')
+                    .selectAll('table').data([{ data: data }])
+                    .join('table')
+                    .call(sel => {
+
+                        // thead
+                        sel.selectAll('thead').data(d => [d])
+                            .join('thead')
+                            .selectAll('tr').data(d => [d])
+                            .join('tr')
+                            .selectAll('th')
+                            .data(column_order)
+                            .join('th')
+                            .html(d => d.toUpperCase())
+
+
+                        // tbody
+                        sel.selectAll('tbody').data(d => [d])
+                            .join('tbody')
+
+                            // rows
+                            .selectAll('tr').data(d => d.data)
+                            .join('tr')
+
+                            // columns
+                            .selectAll('td').data(d => {
+
+                                // sync header with data
+
+                                let k = column_order
+                                    .map(p => {
+                                        return {
+                                            column: p,
+                                            data: d
+                                        }
+                                    })
+
+                                return k;
+
+                            })
+                            .join('td')
+                            .html(d => {
+
+                                return d.data[d.column];
+
+                            })
+
+                    });
+            }
+
+
+
+        </script>
+</body>
+
+</html>
